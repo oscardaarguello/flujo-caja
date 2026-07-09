@@ -83,12 +83,13 @@ tr:hover td { background: #f8f9ff; }
 <div class="header">
   <div>
     <h1>CXC / CXP <span>FINANDINA</span></h1>
-    <div class="subtitle">Miles de pesos · Datos guardados automáticamente</div>
+    <div class="subtitle">Miles de pesos · Datos guardados automáticamente · <span id="syncStatus" style="font-weight:600">Conectando...</span></div>
   </div>
   <div>
     <button class="btn btn-success" onclick="exportarDatos()">💾 Descargar Respaldo</button>
     <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📂 Cargar Respaldo</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDatos(event)">
+    <button class="btn btn-outline" onclick="sincronizar(true)" title="Forzar sincronización desde la nube">🔄</button>
     <button class="btn btn-danger btn-sm" onclick="if(confirm('¿Borrar todos los datos?')) limpiarDatos()">🗑</button>
   </div>
 </div>
@@ -323,6 +324,15 @@ tr:hover td { background: #f8f9ff; }
 <!-- ===== CONFIG ===== -->
 <div class="tab-content" id="tab-config">
   <div class="form-section">
+    <h3>Sincronización en la Nube</h3>
+    <p class="text-muted" style="margin-bottom:8px">Token de GitHub para sincronizar datos entre dispositivos. Obtenlo en <code>github.com/settings/tokens</code> (classic, solo permiso <strong>repo</strong>).</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="password" id="githubTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:8px 10px;border:1px solid #dadce0;border-radius:6px;font-size:13px">
+      <button class="btn btn-primary btn-sm" onclick="guardarToken()">Guardar</button>
+      <span id="tokenStatus" style="font-size:12px"></span>
+    </div>
+  </div>
+  <div class="form-section">
     <h3>Porcentajes de Impuestos y Descuentos</h3>
     <p class="text-muted" style="margin-bottom:12px">Modifica los porcentajes según corresponda. Se aplicarán a todos los cálculos nuevos.</p>
     <table class="config-table">
@@ -344,6 +354,62 @@ tr:hover td { background: #f8f9ff; }
 <script>
 // ===== STORE =====
 const STORE_KEY = 'flujoCajaFinandina';
+
+// ===== CLOUD SYNC =====
+const GITHUB_USER = 'oscardaarguello';
+const GITHUB_REPO = 'flujo-caja';
+const GITHUB_PATH = 'datos.json';
+const CACHE_KEY = 'flujoUltimaSync';
+
+function getGithubToken() {
+  return localStorage.getItem('github_token') || '';
+}
+
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  const bin = Array.from(bytes, b => String.fromCharCode(b)).join('');
+  return btoa(bin);
+}
+
+function fromBase64(str) {
+  str = str.replace(/\\n/g, '');
+  const bin = atob(str);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function subirDatos(data) {
+  const sha = localStorage.getItem(CACHE_KEY) || undefined;
+  const body = { message: 'Auto-sync', content: toBase64(JSON.stringify(data, null, 2)) };
+  if (sha && sha.length > 10) body.sha = sha;
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+  fetch(url, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${getGithubToken()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(r => r.json())
+  .then(r => { if (r.content) localStorage.setItem(CACHE_KEY, r.content.sha); })
+  .catch(() => {});
+}
+
+function bajarDatos() {
+  return fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+    headers: { Authorization: `Bearer ${getGithubToken()}` }
+  })
+  .then(r => {
+    if (!r.ok) throw new Error('No hay datos en la nube');
+    return r.json();
+  })
+  .then(r => {
+    localStorage.setItem(CACHE_KEY, r.sha);
+    const json = fromBase64(r.content);
+    const data = JSON.parse(json);
+    if (!data.config) data.config = getDefaultConfig();
+    if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
+    return data;
+  });
+}
 
 function getDefaultConfig() {
   return {
@@ -383,34 +449,50 @@ function getDefaultData() {
   };
 }
 
+function migrarData(data) {
+  if (!data.config) data.config = getDefaultConfig();
+  if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
+  if (data.cxc) data.cxc.forEach(c => {
+    if (!c.abonos && c.abonado > 0) c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
+    if (!c.abonos) c.abonos = [];
+  });
+  if (data.cxp) data.cxp.forEach(c => {
+    if (!c.abonos && c.abonado > 0) c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
+    if (!c.abonos) c.abonos = [];
+  });
+  return data;
+}
+
 function cargarDatos() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      if (!data.config) data.config = getDefaultConfig();
-      if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
-      // Migrate old data to new format with dates
-      if (data.cxc) data.cxc.forEach(c => {
-        if (!c.abonos && c.abonado > 0) {
-          c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
-        }
-        if (!c.abonos) c.abonos = [];
-      });
-      if (data.cxp) data.cxp.forEach(c => {
-        if (!c.abonos && c.abonado > 0) {
-          c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
-        }
-        if (!c.abonos) c.abonos = [];
-      });
-      return data;
-    }
+    if (raw) return migrarData(JSON.parse(raw));
   } catch(e) {}
   return getDefaultData();
 }
 
+function sincronizar(forzar) {
+  const status = document.getElementById('syncStatus');
+  if (!getGithubToken()) {
+    if (status) status.textContent = 'Configurar token ⚙';
+    return;
+  }
+  if (status) status.textContent = 'Sincronizando...';
+  bajarDatos()
+    .then(data => {
+      DATA = migrarData(data);
+      guardarDatos(DATA);
+      renderAll();
+      if (status) status.textContent = 'En línea ✓';
+    })
+    .catch(() => {
+      if (status) status.textContent = localStorage.getItem(CACHE_KEY) ? 'En línea ✓' : 'Sin conexión';
+    });
+}
+
 function guardarDatos(data) {
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  subirDatos(data);
 }
 
 let DATA = cargarDatos();
@@ -1274,6 +1356,9 @@ function toggleDocDetail(id) {
 
 function renderConfig() {
   const tbody = document.getElementById('configTableBody');
+  // Load saved token
+  const tk = document.getElementById('githubTokenInput');
+  if (tk) tk.value = localStorage.getItem('github_token') || '';
   let html = '';
   for (const [key, val] of Object.entries(DATA.config.taxRates)) {
     const desc = DATA.config.taxRateDescriptions[key] || 'Subtotal';
@@ -1336,11 +1421,10 @@ function importarDatos(event) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.config) data.config = getDefaultConfig();
-      if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
-      DATA = data;
+      DATA = migrarData(data);
       guardarDatos(DATA);
       renderAll();
+      sincronizar(true);
       alert('Datos importados correctamente');
     } catch(err) {
       alert('Error al importar: ' + err.message);
@@ -1356,9 +1440,22 @@ function limpiarDatos() {
   renderAll();
 }
 
+function guardarToken() {
+  const input = document.getElementById('githubTokenInput');
+  const val = input.value.trim();
+  if (!val) {
+    document.getElementById('tokenStatus').textContent = 'Ingresa un token';
+    return;
+  }
+  localStorage.setItem('github_token', val);
+  document.getElementById('tokenStatus').textContent = '✓ Guardado';
+  sincronizar(true);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   renderAll();
   calcularVenta();
+  sincronizar();
 });
 </script>
 </body>
