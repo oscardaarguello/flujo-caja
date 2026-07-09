@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CXC / CXP - Finandina</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+h1 { font-size: 22px; margin-bottom: 5px; }
+.subtitle { color: #666; font-size: 13px; margin-bottom: 15px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+.header h1 span { color: #1a73e8; }
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 20px; }
+.tab { padding: 10px 18px; background: #e8eaed; border: none; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; border-radius: 8px 8px 0 0; transition: all .2s; }
+.tab:hover { background: #d2d4d8; }
+.tab.active { background: #1a73e8; color: #fff; }
+.tab .badge { background: #ea4335; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: 5px; }
+.tab-content { display: none; background: #fff; border-radius: 0 8px 8px 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tab-content.active { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+th { background: #f5f5f5; font-weight: 600; color: #555; position: sticky; top: 0; }
+tr:hover td { background: #f8f9ff; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-muted { color: #999; font-size: 12px; }
+.money { font-family: 'Consolas', monospace; text-align: right; }
+.positive { color: #1b8a3d; }
+.negative { color: #d32f2f; }
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1557b0; }
+.btn-success { background: #1b8a3d; color: #fff; }
+.btn-success:hover { background: #146b2f; }
+.btn-danger { background: #d32f2f; color: #fff; }
+.btn-danger:hover { background: #b71c1c; }
+.btn-warning { background: #f9a825; color: #fff; }
+.btn-warning:hover { background: #f57f17; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-outline { background: transparent; border: 1px solid #1a73e8; color: #1a73e8; }
+.btn-outline:hover { background: #e8f0fe; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 3px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; transition: border .2s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,.15); }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.form-section { background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+.form-section h3 { font-size: 14px; margin-bottom: 12px; color: #1a73e8; }
+.card { background: #fff; border: 1px solid #e8eaed; border-radius: 8px; padding: 16px; margin-bottom: 15px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.card-header h3 { font-size: 15px; }
+.invoice-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8eaed; }
+.invoice-detail.open { display: block; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 15px; }
+.summary-item { background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: center; }
+.summary-item .label { font-size: 11px; color: #666; text-transform: uppercase; }
+.summary-item .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+.status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.status-pendiente { background: #fff3e0; color: #e65100; }
+.status-cobrado, .status-pagado { background: #e8f5e9; color: #1b8a3d; }
+.status-vencido { background: #ffebee; color: #c62828; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin: 10px 0; }
+.detail-grid .item { padding: 6px 10px; background: #f8f9fa; border-radius: 4px; }
+.detail-grid .item .lbl { font-size: 11px; color: #666; }
+.detail-grid .item .val { font-size: 14px; font-weight: 600; }
+.tax-table td { vertical-align: top; }
+.subrow td { padding-left: 30px; font-size: 12px; color: #666; }
+.empty-state { text-align: center; padding: 40px 20px; color: #999; }
+.empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+.config-table td { vertical-align: middle; }
+.config-table input[type="number"] { width: 100px; padding: 4px 8px; border: 1px solid #dadce0; border-radius: 4px; text-align: right; }
+.filter-bar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; flex-wrap: wrap; }
+.filter-bar .form-group { margin-bottom: 0; min-width: 140px; }
+.filter-bar .form-group label { font-size: 11px; }
+.filter-bar input, .filter-bar select { padding: 5px 8px; font-size: 12px; }
+@media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .tab { padding: 8px 12px; font-size: 12px; } }
+@media print { .tabs, .btn, .form-section { display: none; } .tab-content { display: block !important; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>CXC / CXP <span>FINANDINA</span></h1>
+    <div class="subtitle">Miles de pesos · Datos guardados automáticamente</div>
+  </div>
+  <div>
+    <button class="btn btn-success" onclick="exportarDatos()">💾 Descargar Respaldo</button>
+    <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📂 Cargar Respaldo</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDatos(event)">
+    <button class="btn btn-danger btn-sm" onclick="if(confirm('¿Borrar todos los datos?')) limpiarDatos()">🗑</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="ventas">📋 Ventas</button>
+  <button class="tab" data-tab="compras">📦 Compras</button>
+  <button class="tab" data-tab="cxc">💰 CXC <span class="badge" id="cxcBadge">0</span></button>
+  <button class="tab" data-tab="cxp">💳 CXP <span class="badge" id="cxpBadge">0</span></button>
+  <button class="tab" data-tab="impuestos">🧾 Impuestos</button>
+  <button class="tab" data-tab="documentos">📁 Docs</button>
+  <button class="tab" data-tab="config">⚙ Config</button>
+</div>
+
+<!-- ===== VENTAS ===== -->
+<div class="tab-content active" id="tab-ventas">
+  <div class="form-section">
+    <h3>+ Nueva Factura de Venta</h3>
+    <form id="formVenta" onsubmit="guardarVenta(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>N° Factura</label>
+          <input type="text" id="ventaNum" required placeholder="Ej: 5823">
+        </div>
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="ventaCliente" required placeholder="Nombre del cliente">
+        </div>
+        <div class="form-group">
+          <label>OC / Pedido</label>
+          <input type="text" id="ventaOC" placeholder="Ej: OC 15795969">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Ingreso</label>
+          <input type="date" id="ventaFechaPedido">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descripción / Concepto</label>
+        <textarea id="ventaDesc" rows="2" placeholder="Descripción de los productos o servicios"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subtotal (miles $)</label>
+          <input type="number" id="ventaSubtotal" step="0.001" required oninput="calcularVenta()" placeholder="0.000">
+        </div>
+        <div class="form-group">
+          <label>IVA (%)</label>
+          <input type="number" id="ventaIvaPct" step="0.1" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>Valor IVA (miles $)</label>
+          <input type="number" id="ventaIva" step="0.001" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>Total (miles $)</label>
+          <input type="number" id="ventaTotal" step="0.001" readonly style="background:#f0f0f0; font-weight:700">
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+        <div class="form-group">
+          <label>Retefuente (miles $)</label>
+          <input type="number" id="ventaRetefuente" step="0.001" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>ReteIVA (miles $)</label>
+          <input type="number" id="ventaReteIva" step="0.001" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>ReteICA (miles $)</label>
+          <input type="number" id="ventaReteIca" step="0.001" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>Dto Financiero / Pronto Pago (miles $)</label>
+          <input type="number" id="ventaProntoPago" step="0.001" placeholder="0.000" oninput="calcularVenta()" style="background:#fff8e1">
+        </div>
+        <div class="form-group">
+          <label>Crossdocking (miles $)</label>
+          <input type="number" id="ventaCrossdocking" step="0.001" placeholder="0.000" oninput="calcularVenta()" style="background:#fff8e1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Neto a Recibir (miles $)</label>
+          <input type="number" id="ventaRecibir" step="0.001" readonly style="background:#e8f5e9; font-weight:700">
+        </div>
+        <div class="form-group">
+          <label>Documento Externo (PDF, link, etc.)</label>
+          <input type="text" id="ventaDocExterno" placeholder="Ej: factura_5823.pdf">
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <button type="submit" class="btn btn-success" id="btnGuardarVenta">+ Agregar Factura de Venta</button>
+        <button type="button" class="btn btn-warning" id="btnCancelarVenta" style="display:none" onclick="cancelarEdicionVenta()">✕ Cancelar edición</button>
+        <span id="editandoVentaLabel" style="display:none;color:#d32f2f;font-size:12px;font-weight:600">✏️ Editando factura</span>
+      </div>
+    </form>
+  </div>
+  <div class="filter-bar">
+    <div class="form-group"><label>Factura #</label><input type="text" id="filtroVentaFactura" placeholder="Ej: 5823" oninput="renderVentas()"></div>
+    <div class="form-group"><label>Fecha desde</label><input type="date" id="filtroVentaFechaDesde" oninput="renderVentas()"></div>
+    <div class="form-group"><label>Fecha hasta</label><input type="date" id="filtroVentaFechaHasta" oninput="renderVentas()"></div>
+  </div>
+  <div id="ventasList"></div>
+</div>
+
+<!-- ===== COMPRAS ===== -->
+<div class="tab-content" id="tab-compras">
+  <div class="form-section">
+    <h3>+ Nueva Factura de Compra</h3>
+    <form id="formCompra" onsubmit="guardarCompra(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>N° Factura</label>
+          <input type="text" id="compraNum" required placeholder="Ej: 3702">
+        </div>
+        <div class="form-group">
+          <label>Proveedor</label>
+          <input type="text" id="compraProveedor" required placeholder="Nombre del proveedor">
+        </div>
+        <div class="form-group">
+          <label>OC / Pedido</label>
+          <input type="text" id="compraOC" placeholder="Ej: OC 1456">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha Factura</label>
+          <input type="date" id="compraFecha">
+        </div>
+        <div class="form-group">
+          <label>Fecha Vencimiento</label>
+          <input type="date" id="compraFechaVenc">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descripción / Concepto</label>
+        <textarea id="compraDesc" rows="2" placeholder="Descripción de los productos o servicios"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subtotal (miles $)</label>
+          <input type="number" id="compraSubtotal" step="0.001" required oninput="calcularCompra()" placeholder="0.000">
+        </div>
+        <div class="form-group">
+          <label>IVA (miles $)</label>
+          <input type="number" id="compraIva" step="0.001" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group">
+          <label>Total (miles $)</label>
+          <input type="number" id="compraTotal" step="0.001" readonly style="background:#fff3e0; font-weight:700">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Documento Externo</label>
+        <input type="text" id="compraDocExterno" placeholder="Ej: factura_compra_3702.pdf">
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <button type="submit" class="btn btn-success" id="btnGuardarCompra">+ Agregar Factura de Compra</button>
+        <button type="button" class="btn btn-warning" id="btnCancelarCompra" style="display:none" onclick="cancelarEdicionCompra()">✕ Cancelar edición</button>
+        <span id="editandoCompraLabel" style="display:none;color:#d32f2f;font-size:12px;font-weight:600">✏️ Editando factura</span>
+      </div>
+    </form>
+  </div>
+  <div class="filter-bar">
+    <div class="form-group"><label>Factura #</label><input type="text" id="filtroCompraFactura" placeholder="Ej: 1234" oninput="renderCompras()"></div>
+    <div class="form-group"><label>Fecha desde</label><input type="date" id="filtroCompraFechaDesde" oninput="renderCompras()"></div>
+    <div class="form-group"><label>Fecha hasta</label><input type="date" id="filtroCompraFechaHasta" oninput="renderCompras()"></div>
+  </div>
+  <div id="comprasList"></div>
+</div>
+
+<!-- ===== CXC ===== -->
+<div class="tab-content" id="tab-cxc">
+  <div class="summary-grid" id="cxcSummary"></div>
+  <div class="filter-bar">
+    <div class="form-group"><label>Factura #</label><input type="text" id="filtroCxcFactura" placeholder="Ej: 5823" oninput="renderCxc()"></div>
+    <div class="form-group"><label>Fecha desde</label><input type="date" id="filtroCxcFechaDesde" oninput="renderCxc()"></div>
+    <div class="form-group"><label>Fecha hasta</label><input type="date" id="filtroCxcFechaHasta" oninput="renderCxc()"></div>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Factura</th><th>Cliente</th><th>Concepto</th><th>Fecha</th><th>Valor Total</th><th>Abonado</th><th>Saldo</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody id="cxcTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== CXP ===== -->
+<div class="tab-content" id="tab-cxp">
+  <div class="summary-grid" id="cxpSummary"></div>
+  <div class="filter-bar">
+    <div class="form-group"><label>Factura #</label><input type="text" id="filtroCxpFactura" placeholder="Ej: 1234" oninput="renderCxp()"></div>
+    <div class="form-group"><label>Fecha desde</label><input type="date" id="filtroCxpFechaDesde" oninput="renderCxp()"></div>
+    <div class="form-group"><label>Fecha hasta</label><input type="date" id="filtroCxpFechaHasta" oninput="renderCxp()"></div>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Factura</th><th>Acreedor</th><th>Concepto</th><th>Fecha</th><th>Valor</th><th>Abonado</th><th>Saldo</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody id="cxpTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== IMPUESTOS ===== -->
+<div class="tab-content" id="tab-impuestos">
+  <div class="summary-grid" id="taxSummary">
+    <div class="summary-item"><div class="label">IVA Ventas</div><div class="value positive" id="taxVenta">0</div></div>
+    <div class="summary-item"><div class="label">(-) RETEIVA</div><div class="value" id="taxReteIva">0</div></div>
+    <div class="summary-item"><div class="label">IVA Compras</div><div class="value negative" id="taxCompra">0</div></div>
+    <div class="summary-item"><div class="label">IVA Rebate</div><div class="value" id="taxRebate">0</div></div>
+    <div class="summary-item"><div class="label">IVA Crossdocking</div><div class="value" id="taxCross">0</div></div>
+    <div class="summary-item"><div class="label">IVA Insumos</div><div class="value" id="taxInsumos">0</div></div>
+    <div class="summary-item" style="background:#e8f0fe"><div class="label">SALDO IVA A PAGAR</div><div class="value" id="taxSaldo" style="font-size:24px">0</div></div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="tax-table">
+      <thead><tr><th>Tipo</th><th>Concepto</th><th>Valor (miles $)</th></tr></thead>
+      <tbody id="taxTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== DOCUMENTOS ===== -->
+<div class="tab-content" id="tab-documentos">
+  <p class="text-muted" style="margin-bottom:12px">Detalle individual de cada documento cargado con valores, fechas y documentos externos.</p>
+  <div id="documentosList"></div>
+</div>
+
+<!-- ===== CONFIG ===== -->
+<div class="tab-content" id="tab-config">
+  <div class="form-section">
+    <h3>Porcentajes de Impuestos y Descuentos</h3>
+    <p class="text-muted" style="margin-bottom:12px">Modifica los porcentajes según corresponda. Se aplicarán a todos los cálculos nuevos.</p>
+    <table class="config-table">
+      <thead><tr><th>Concepto</th><th>Porcentaje</th><th>Se aplica sobre</th></tr></thead>
+      <tbody id="configTableBody"></tbody>
+    </table>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input type="text" id="newConfigName" placeholder="Nuevo concepto" style="padding:6px 10px;border:1px solid #dadce0;border-radius:4px;font-size:13px">
+      <input type="number" id="newConfigPct" step="0.01" placeholder="%" style="width:80px;padding:6px 10px;border:1px solid #dadce0;border-radius:4px;font-size:13px">
+      <button class="btn btn-primary btn-sm" onclick="agregarConfigItem()">+ Agregar</button>
+    </div>
+  </div>
+  <div class="form-section">
+    <h3>Nota</h3>
+    <p class="text-muted">Los datos se guardan automáticamente en el navegador.</p>
+  </div>
+</div>
+
+<script>
+// ===== STORE =====
+const STORE_KEY = 'flujoCajaFinandina';
+
+function getDefaultConfig() {
+  return {
+    taxRates: {
+      IVA: 19,
+      RETEFUENTE: 2.5,
+      RETEIVA: 15,
+      RETEICA: 1.104,
+      PRONTOPAGO: 2.5,
+      REBATE: 12.5,
+      CROSSDOCKING: 3,
+      AUTOCREE: 0.55,
+    },
+    taxDescriptions: {
+      IVA: 'Subtotal',
+      RETEFUENTE: 'Subtotal',
+      RETEIVA: 'IVA',
+      RETEICA: 'Subtotal',
+      PRONTOPAGO: 'Sugerido (manual)',
+      REBATE: 'Total',
+      CROSSDOCKING: 'Total',
+      AUTOCREE: 'Subtotal'
+    }
+  };
+}
+
+function getDefaultData() {
+  return {
+    ventas: [],
+    compras: [],
+    cxc: [],
+    cxp: [],
+    comisiones: [],
+    impuestos: { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] },
+
+    config: getDefaultConfig()
+  };
+}
+
+function cargarDatos() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (!data.config) data.config = getDefaultConfig();
+      if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
+      // Migrate old data to new format with dates
+      if (data.cxc) data.cxc.forEach(c => {
+        if (!c.abonos && c.abonado > 0) {
+          c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
+        }
+        if (!c.abonos) c.abonos = [];
+      });
+      if (data.cxp) data.cxp.forEach(c => {
+        if (!c.abonos && c.abonado > 0) {
+          c.abonos = [{ fecha: c.fecha || '2026-07-06', monto: c.abonado }];
+        }
+        if (!c.abonos) c.abonos = [];
+      });
+      return data;
+    }
+  } catch(e) {}
+  return getDefaultData();
+}
+
+function guardarDatos(data) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+}
+
+let DATA = cargarDatos();
+let ventaEditandoId = null;
+let compraEditandoId = null;
+
+// ===== HELPERS =====
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n)) return '0.000';
+  return Number(n).toFixed(3);
+}
+
+function fmtShort(n) {
+  if (n === undefined || n === null || isNaN(n)) return '0';
+  return Number(n).toFixed(1);
+}
+
+function getPct(name) {
+  return (DATA.config.taxRates[name] || 0) / 100;
+}
+
+// ===== FILTERS =====
+function filtrar(prefix, items, facturaKey, fechaKeys) {
+  const fac = document.getElementById('filtro' + prefix + 'Factura');
+  const facVal = fac ? fac.value.trim().toLowerCase() : '';
+  const ds = document.getElementById('filtro' + prefix + 'FechaDesde');
+  const des = ds ? ds.value : '';
+  const hs = document.getElementById('filtro' + prefix + 'FechaHasta');
+  const has = hs ? hs.value : '';
+  const hasDateFilter = !!(des || has);
+  const hasDateKeys = Array.isArray(fechaKeys) ? fechaKeys.length > 0 : true;
+  return items.filter(item => {
+    if (facVal) {
+      const num = (item[facturaKey] || '').toString().toLowerCase();
+      if (num.indexOf(facVal) === -1) return false;
+    }
+    if (hasDateFilter && hasDateKeys) {
+      const keys = typeof fechaKeys === 'function' ? fechaKeys(item) : fechaKeys;
+      let dateStr = null;
+      for (const k of keys) {
+        if (item[k]) { dateStr = item[k]; break; }
+      }
+      if (!dateStr) return false;
+      if (des && dateStr < des) return false;
+      if (has && dateStr > has) return dateStr.substring(0,10) === has;
+    }
+    return true;
+  });
+}
+
+// ===== CALCULATIONS =====
+function calcularVenta() {
+  const subtotal = parseFloat(document.getElementById('ventaSubtotal').value) || 0;
+  const pctIva = getPct('IVA');
+  const iva = subtotal * pctIva;
+  const total = subtotal + iva;
+  const retefuente = subtotal * getPct('RETEFUENTE');
+  const reteiva = iva * getPct('RETEIVA');
+  const reteica = subtotal * getPct('RETEICA');
+  const despuesRet = total - retefuente - reteiva - reteica;
+  const autoProntoPago = despuesRet * getPct('PRONTOPAGO');
+
+  document.getElementById('ventaIvaPct').value = (pctIva * 100).toFixed(1);
+  document.getElementById('ventaIva').value = fmt(iva);
+  document.getElementById('ventaTotal').value = fmt(total);
+  document.getElementById('ventaRetefuente').value = fmt(retefuente);
+  document.getElementById('ventaReteIva').value = fmt(reteiva);
+  document.getElementById('ventaReteIca').value = fmt(reteica);
+
+  const ppField = document.getElementById('ventaProntoPago');
+  const rawPP = ppField.value;
+  if (!rawPP || parseFloat(rawPP) === 0) ppField.value = fmt(autoProntoPago);
+  const prontoPago = parseFloat(ppField.value) || autoProntoPago;
+  const recibir = despuesRet - prontoPago;
+  document.getElementById('ventaRecibir').value = fmt(recibir);
+
+  // Crossdocking: auto-sugerir, editable
+  const autoCross = total * getPct('CROSSDOCKING');
+  const cdField = document.getElementById('ventaCrossdocking');
+  const rawCD = cdField.value;
+  if (!rawCD || parseFloat(rawCD) === 0) cdField.value = fmt(autoCross);
+}
+
+function calcularCompra() {
+  const subtotal = parseFloat(document.getElementById('compraSubtotal').value) || 0;
+  const iva = subtotal * getPct('IVA');
+  const total = subtotal + iva;
+  document.getElementById('compraIva').value = fmt(iva);
+  document.getElementById('compraTotal').value = fmt(total);
+}
+
+// ===== VENTAS =====
+function guardarVenta(e) {
+  e.preventDefault();
+  const subtotal = parseFloat(document.getElementById('ventaSubtotal').value) || 0;
+  const pctIva = getPct('IVA');
+  const iva = subtotal * pctIva;
+  const total = subtotal + iva;
+  const retefuente = subtotal * getPct('RETEFUENTE');
+  const reteiva = iva * getPct('RETEIVA');
+  const reteica = subtotal * getPct('RETEICA');
+  const despuesRet = total - retefuente - reteiva - reteica;
+  const prontoPago = parseFloat(document.getElementById('ventaProntoPago').value) || 0;
+  const recibir = despuesRet - prontoPago;
+  const rebate = total * getPct('REBATE');
+  const crossdocking = parseFloat(document.getElementById('ventaCrossdocking').value) || (total * getPct('CROSSDOCKING'));
+  const ivaRebate = rebate / (1 + pctIva) * pctIva;
+  const ivaCross = crossdocking / (1 + pctIva) * pctIva;
+
+  if (ventaEditandoId) {
+    const idx = DATA.ventas.findIndex(v => v.id === ventaEditandoId);
+    if (idx === -1) return;
+    const old = DATA.ventas[idx];
+    const abonado = old.abonado || 0;
+    DATA.ventas[idx] = {
+      ...old,
+      numero: document.getElementById('ventaNum').value,
+      cliente: document.getElementById('ventaCliente').value,
+      oc: document.getElementById('ventaOC').value,
+      fechaPedido: document.getElementById('ventaFechaPedido').value,
+      descripcion: document.getElementById('ventaDesc').value,
+      subtotal, iva, total, retefuente, reteiva, reteica, prontoPago, recibir, rebate, crossdocking, ivaRebate, ivaCross,
+      docExterno: document.getElementById('ventaDocExterno').value,
+      abonado: abonado,
+      estado: abonado >= recibir ? 'Cobrado' : abonado > 0 ? 'Parcial' : 'Pendiente'
+    };
+    const oldCxc = DATA.cxc.find(c => c.id === ventaEditandoId);
+    const oldAbonos = oldCxc && oldCxc.abonos ? oldCxc.abonos : [];
+    DATA.cxc = DATA.cxc.filter(c => c.id !== ventaEditandoId);
+    DATA.impuestos.venta = DATA.impuestos.venta.filter(t => t.id !== ventaEditandoId);
+    DATA.impuestos.reteiva = DATA.impuestos.reteiva.filter(t => t.id !== ventaEditandoId);
+    DATA.impuestos.rebate = DATA.impuestos.rebate.filter(t => t.id !== ventaEditandoId);
+    DATA.impuestos.cross = DATA.impuestos.cross.filter(t => t.id !== ventaEditandoId);
+    actualizarCxc(DATA.ventas[idx], oldAbonos);
+    actualizarImpuestosVenta(DATA.ventas[idx]);
+    ventaEditandoId = null;
+  } else {
+    const venta = {
+      id: Date.now() + Math.random(),
+      tipo: 'venta',
+      numero: document.getElementById('ventaNum').value,
+      cliente: document.getElementById('ventaCliente').value,
+      oc: document.getElementById('ventaOC').value,
+      fechaPedido: document.getElementById('ventaFechaPedido').value,
+      descripcion: document.getElementById('ventaDesc').value,
+      subtotal, iva, total, retefuente, reteiva, reteica, prontoPago, recibir, rebate, crossdocking, ivaRebate, ivaCross,
+      docExterno: document.getElementById('ventaDocExterno').value,
+      estado: 'Pendiente',
+      abonado: 0,
+      fechaCreacion: new Date().toISOString()
+    };
+    DATA.ventas.push(venta);
+    actualizarCxc(venta);
+    actualizarImpuestosVenta(venta);
+  }
+
+  guardarDatos(DATA);
+  renderAll();
+  cancelarEdicionVenta();
+}
+
+function limpiarCamposVenta() {
+  ['ventaIva','ventaTotal','ventaRetefuente','ventaReteIva','ventaReteIca','ventaProntoPago','ventaCrossdocking','ventaRecibir'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('ventaIvaPct').value = '';
+}
+
+function actualizarCxc(venta, oldAbonos) {
+  const entry = {
+    id: venta.id,
+    factura: venta.numero,
+    cliente: venta.cliente,
+    concepto: venta.descripcion || `Factura de Venta ${venta.numero}`,
+    fecha: venta.fechaPedido,
+    valorTotal: venta.recibir,
+    abonado: 0,
+    saldo: venta.recibir,
+    estado: 'Pendiente',
+    tipo: 'venta',
+    ventaId: venta.id
+  };
+  // Preserve existing abonos
+  if (oldAbonos && oldAbonos.length > 0) {
+    entry.abonos = oldAbonos.slice();
+    entry.abonado = oldAbonos.reduce((s, a) => s + a.monto, 0);
+    entry.saldo = Math.max(0, venta.recibir - entry.abonado);
+    entry.estado = entry.saldo <= 0 ? 'Cobrado' : entry.abonado > 0 ? 'Parcial' : 'Pendiente';
+  }
+  DATA.cxc.push(entry);
+}
+
+function actualizarImpuestosVenta(venta) {
+  DATA.impuestos.venta.push({
+    id: venta.id,
+    fecha: venta.fechaPedido,
+    concepto: `Factura de Venta ${venta.numero}`,
+    valor: venta.iva
+  });
+  DATA.impuestos.reteiva.push({
+    id: venta.id,
+    fecha: venta.fechaPedido,
+    concepto: `Factura de Venta ${venta.numero}`,
+    valor: venta.reteiva
+  });
+  DATA.impuestos.rebate.push({
+    id: venta.id,
+    fecha: venta.fechaPedido,
+    concepto: `IVA Rebate Factura ${venta.numero}`,
+    valor: venta.ivaRebate
+  });
+  DATA.impuestos.cross.push({
+    id: venta.id,
+    fecha: venta.fechaPedido,
+    concepto: `IVA Crossdocking Factura ${venta.numero}`,
+    valor: venta.ivaCross
+  });
+}
+
+// ===== COMPRAS =====
+function guardarCompra(e) {
+  e.preventDefault();
+  const subtotal = parseFloat(document.getElementById('compraSubtotal').value) || 0;
+  const pctIva = getPct('IVA');
+  const iva = subtotal * pctIva;
+  const total = subtotal + iva;
+
+  if (compraEditandoId) {
+    const idx = DATA.compras.findIndex(c => c.id === compraEditandoId);
+    if (idx === -1) return;
+    const old = DATA.compras[idx];
+    DATA.compras[idx] = {
+      ...old,
+      numero: document.getElementById('compraNum').value,
+      proveedor: document.getElementById('compraProveedor').value,
+      oc: document.getElementById('compraOC').value,
+      fecha: document.getElementById('compraFecha').value,
+      fechaVenc: document.getElementById('compraFechaVenc').value,
+      descripcion: document.getElementById('compraDesc').value,
+      subtotal, iva, total,
+      docExterno: document.getElementById('compraDocExterno').value,
+      abonado: old.abonado || 0,
+      estado: (old.abonado||0) >= total ? 'Pagado' : (old.abonado||0) > 0 ? 'Parcial' : 'Pendiente'
+    };
+    const oldCxp = DATA.cxp.find(c => c.id === compraEditandoId);
+    const oldAbonos = oldCxp && oldCxp.abonos ? oldCxp.abonos : [];
+    DATA.cxp = DATA.cxp.filter(c => c.id !== compraEditandoId);
+    DATA.impuestos.compra = DATA.impuestos.compra.filter(t => t.id !== compraEditandoId);
+    actualizarCxp(DATA.compras[idx], oldAbonos);
+    actualizarImpuestosCompra(DATA.compras[idx]);
+    compraEditandoId = null;
+  } else {
+    const compra = {
+      id: Date.now() + Math.random(),
+      tipo: 'compra',
+      numero: document.getElementById('compraNum').value,
+      proveedor: document.getElementById('compraProveedor').value,
+      oc: document.getElementById('compraOC').value,
+      fecha: document.getElementById('compraFecha').value,
+      fechaVenc: document.getElementById('compraFechaVenc').value,
+      descripcion: document.getElementById('compraDesc').value,
+      subtotal, iva, total,
+      docExterno: document.getElementById('compraDocExterno').value,
+      estado: 'Pendiente',
+      abonado: 0,
+      fechaCreacion: new Date().toISOString()
+    };
+    DATA.compras.push(compra);
+    actualizarCxp(compra);
+    actualizarImpuestosCompra(compra);
+  }
+
+  guardarDatos(DATA);
+  renderAll();
+  cancelarEdicionCompra();
+}
+
+function limpiarCamposCompra() {
+  document.getElementById('compraIva').value = '';
+  document.getElementById('compraTotal').value = '';
+}
+
+function actualizarCxp(compra, oldAbonos) {
+  const entry = {
+    id: compra.id,
+    factura: compra.numero,
+    acreedor: compra.proveedor,
+    concepto: compra.descripcion || `Factura de Compra ${compra.numero}`,
+    fecha: compra.fecha,
+    valor: compra.total,
+    abonado: 0,
+    saldo: compra.total,
+    estado: 'Pendiente',
+    tipo: 'compra',
+    compraId: compra.id
+  };
+  if (oldAbonos && oldAbonos.length > 0) {
+    entry.abonos = oldAbonos.slice();
+    entry.abonado = oldAbonos.reduce((s, a) => s + a.monto, 0);
+    entry.saldo = Math.max(0, compra.total - entry.abonado);
+    entry.estado = entry.saldo <= 0 ? 'Pagado' : entry.abonado > 0 ? 'Parcial' : 'Pendiente';
+  }
+  DATA.cxp.push(entry);
+}
+
+function actualizarImpuestosCompra(compra) {
+  DATA.impuestos.compra.push({
+    id: compra.id,
+    fecha: compra.fecha,
+    concepto: `Factura de Compra ${compra.numero}`,
+    valor: compra.iva
+  });
+}
+
+// ===== ABONOS =====
+function abonarCxc(id) {
+  const fecha = prompt('Fecha del abono (YYYY-MM-DD):\nEj: 2026-07-10');
+  if (!fecha) return;
+  const monto = prompt('Monto del abono (miles $):\nEj: 5000');
+  if (monto === null) return;
+  const val = parseFloat(monto);
+  if (isNaN(val) || val <= 0) return;
+  const item = DATA.cxc.find(c => c.id === id);
+  if (!item) return;
+  if (!item.abonos) item.abonos = [];
+  item.abonos.push({ fecha, monto: val });
+  recalcularCxc(item);
+  const venta = DATA.ventas.find(v => v.id === id);
+  if (venta) { venta.estado = item.estado; venta.abonado = item.abonado; }
+  // DEBUG
+  console.log('abonarCxc: id='+id, 'fecha='+fecha, 'monto='+val, 'abonos=', JSON.stringify(item.abonos));
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function editarAbonoCxc(cxcId, idx) {
+  const item = DATA.cxc.find(c => c.id === cxcId);
+  if (!item || !item.abonos || !item.abonos[idx]) return;
+  const a = item.abonos[idx];
+  const fecha = prompt('Nueva fecha (YYYY-MM-DD):', a.fecha);
+  if (!fecha) return;
+  const monto = prompt('Nuevo monto (miles $):', a.monto);
+  if (monto === null) return;
+  const val = parseFloat(monto);
+  if (isNaN(val) || val <= 0) return;
+  item.abonos[idx] = { fecha, monto: val };
+  recalcularCxc(item);
+  const venta = DATA.ventas.find(v => v.id === cxcId);
+  if (venta) { venta.estado = item.estado; venta.abonado = item.abonado; }
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function eliminarAbonoCxc(cxcId, idx) {
+  if (!confirm('¿Eliminar este abono?')) return;
+  const item = DATA.cxc.find(c => c.id === cxcId);
+  if (!item || !item.abonos) return;
+  item.abonos.splice(idx, 1);
+  recalcularCxc(item);
+  const venta = DATA.ventas.find(v => v.id === cxcId);
+  if (venta) { venta.estado = item.estado; venta.abonado = item.abonado; }
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function recalcularCxc(item) {
+  item.abonado = item.abonos.reduce((s, a) => s + a.monto, 0);
+  item.saldo = Math.max(0, item.valorTotal - item.abonado);
+  item.estado = item.saldo <= 0 ? 'Cobrado' : item.abonado > 0 ? 'Parcial' : 'Pendiente';
+}
+
+function abonarCxp(id) {
+  const fecha = prompt('Fecha del abono (YYYY-MM-DD):\nEj: 2026-07-15');
+  if (!fecha) return;
+  const monto = prompt('Monto del abono (miles $):\nEj: 3000');
+  if (monto === null) return;
+  const val = parseFloat(monto);
+  if (isNaN(val) || val <= 0) return;
+  const item = DATA.cxp.find(c => c.id === id);
+  if (!item) return;
+  if (!item.abonos) item.abonos = [];
+  item.abonos.push({ fecha, monto: val });
+  recalcularCxp(item);
+  const compra = DATA.compras.find(c => c.id === id);
+  if (compra) { compra.estado = item.estado; compra.abonado = item.abonado; }
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function editarAbonoCxp(cxpId, idx) {
+  const item = DATA.cxp.find(c => c.id === cxpId);
+  if (!item || !item.abonos || !item.abonos[idx]) return;
+  const a = item.abonos[idx];
+  const fecha = prompt('Nueva fecha (YYYY-MM-DD):', a.fecha);
+  if (!fecha) return;
+  const monto = prompt('Nuevo monto (miles $):', a.monto);
+  if (monto === null) return;
+  const val = parseFloat(monto);
+  if (isNaN(val) || val <= 0) return;
+  item.abonos[idx] = { fecha, monto: val };
+  recalcularCxp(item);
+  const compra = DATA.compras.find(c => c.id === cxpId);
+  if (compra) { compra.estado = item.estado; compra.abonado = item.abonado; }
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function eliminarAbonoCxp(cxpId, idx) {
+  if (!confirm('¿Eliminar este abono?')) return;
+  const item = DATA.cxp.find(c => c.id === cxpId);
+  if (!item || !item.abonos) return;
+  item.abonos.splice(idx, 1);
+  recalcularCxp(item);
+  const compra = DATA.compras.find(c => c.id === cxpId);
+  if (compra) { compra.estado = item.estado; compra.abonado = item.abonado; }
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function recalcularCxp(item) {
+  item.abonado = item.abonos.reduce((s, a) => s + a.monto, 0);
+  item.saldo = Math.max(0, item.valor - item.abonado);
+  item.estado = item.saldo <= 0 ? 'Pagado' : item.abonado > 0 ? 'Parcial' : 'Pendiente';
+}
+
+// ===== RENDER =====
+function renderAll() {
+  renderVentas();
+  renderCompras();
+  renderCxc();
+  renderCxp();
+  renderImpuestos();
+  renderDocumentos();
+  renderConfig();
+  actualizarBadges();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+
+function renderVentas() {
+  const container = document.getElementById('ventasList');
+  const ventas = filtrar('Venta', [...DATA.ventas].reverse(), 'numero', ['fechaPedido']);
+  if (ventas.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No hay facturas de venta cargadas</p></div>';
+    return;
+  }
+  let html = '<div style="overflow-x:auto"><table><thead><tr><th>N° Factura</th><th>Cliente</th><th>OC</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Neto Recibir</th><th>Estado</th><th></th></tr></thead><tbody>';
+  [...DATA.ventas].reverse().forEach(v => {
+    html += `<tr>
+      <td><strong>${v.numero}</strong></td>
+      <td>${v.cliente}</td>
+      <td class="text-muted">${v.oc || '-'}</td>
+      <td class="money">${fmt(v.subtotal)}</td>
+      <td class="money">${fmt(v.iva)}</td>
+      <td class="money">${fmt(v.total)}</td>
+      <td class="money positive">${fmt(v.recibir)}</td>
+      <td><span class="status-badge status-${v.estado === 'Cobrado' ? 'cobrado' : v.estado === 'Parcial' ? 'pendiente' : 'pendiente'}">${v.estado}</span></td>
+      <td><button class="btn btn-sm btn-outline" onclick="toggleDetalleVenta(${v.id})">📄</button>
+      <button class="btn btn-sm btn-primary" onclick="editarVenta(${v.id})">✏️</button>
+      <button class="btn btn-sm btn-danger" onclick="eliminarVenta(${v.id})">✕</button></td>
+    </tr>
+    <tr id="detalleVenta${v.id}" style="display:none">
+      <td colspan="9" style="padding:0">
+        <div style="padding:12px 20px;background:#fafafa">
+          <div class="detail-grid">
+            <div class="item"><div class="lbl">Descripción</div><div class="val">${v.descripcion || 'Sin descripción'}</div></div>
+            <div class="item"><div class="lbl">Fecha de Ingreso</div><div class="val">${v.fechaPedido || '-'}</div></div>
+            <div class="item"><div class="lbl">Retefuente</div><div class="val">${fmt(v.retefuente)}</div></div>
+            <div class="item"><div class="lbl">ReteIVA</div><div class="val">${fmt(v.reteiva)}</div></div>
+            <div class="item"><div class="lbl">ReteICA</div><div class="val">${fmt(v.reteica)}</div></div>
+            <div class="item"><div class="lbl">Pronto Pago</div><div class="val">${fmt(v.prontoPago)}</div></div>
+            <div class="item"><div class="lbl">Rebate</div><div class="val">${fmt(v.rebate)}</div></div>
+            <div class="item"><div class="lbl">Crossdocking</div><div class="val">${fmt(v.crossdocking)}</div></div>
+            <div class="item"><div class="lbl">IVA Rebate</div><div class="val">${fmt(v.ivaRebate)}</div></div>
+            <div class="item"><div class="lbl">IVA Crossdocking</div><div class="val">${fmt(v.ivaCross)}</div></div>
+            <div class="item"><div class="lbl">Documento Externo</div><div class="val">${v.docExterno || '-'}</div></div>
+            <div class="item"><div class="lbl">Abonado</div><div class="val positive">${fmt(v.abonado || 0)}</div></div>
+            <div class="item"><div class="lbl">Saldo Pendiente</div><div class="val negative">${fmt(Math.max(0, v.recibir - (v.abonado || 0)))}</div></div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+
+  const totalVentas = DATA.ventas.reduce((s, v) => s + v.total, 0);
+  const totalRecibir = DATA.ventas.reduce((s, v) => s + v.recibir, 0);
+}
+
+function toggleDetalleVenta(id) {
+  const el = document.getElementById('detalleVenta' + id);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function editarVenta(id) {
+  const v = DATA.ventas.find(x => x.id === id);
+  if (!v) return;
+  ventaEditandoId = id;
+  document.getElementById('ventaNum').value = v.numero;
+  document.getElementById('ventaCliente').value = v.cliente;
+  document.getElementById('ventaOC').value = v.oc || '';
+  document.getElementById('ventaFechaPedido').value = v.fechaPedido || '';
+  document.getElementById('ventaDesc').value = v.descripcion || '';
+  document.getElementById('ventaSubtotal').value = v.subtotal;
+  document.getElementById('ventaProntoPago').value = fmt(v.prontoPago);
+  document.getElementById('ventaCrossdocking').value = fmt(v.crossdocking);
+  document.getElementById('ventaDocExterno').value = v.docExterno || '';
+  calcularVenta();
+  document.getElementById('btnGuardarVenta').textContent = '💾 Actualizar Factura de Venta';
+  document.getElementById('btnCancelarVenta').style.display = '';
+  document.getElementById('editandoVentaLabel').style.display = '';
+  document.querySelector('[data-tab="ventas"]').click();
+}
+
+function cancelarEdicionVenta() {
+  ventaEditandoId = null;
+  document.getElementById('formVenta').reset();
+  limpiarCamposVenta();
+  document.getElementById('btnGuardarVenta').textContent = '+ Agregar Factura de Venta';
+  document.getElementById('btnCancelarVenta').style.display = 'none';
+  document.getElementById('editandoVentaLabel').style.display = 'none';
+}
+
+function eliminarVenta(id) {
+  if (!confirm('¿Eliminar esta factura de venta?')) return;
+  DATA.ventas = DATA.ventas.filter(v => v.id !== id);
+  DATA.cxc = DATA.cxc.filter(c => c.id !== id);
+  DATA.impuestos.venta = DATA.impuestos.venta.filter(t => t.id !== id);
+  DATA.impuestos.reteiva = DATA.impuestos.reteiva.filter(t => t.id !== id);
+  DATA.impuestos.rebate = DATA.impuestos.rebate.filter(t => t.id !== id);
+  DATA.impuestos.cross = DATA.impuestos.cross.filter(t => t.id !== id);
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function renderCompras() {
+  const container = document.getElementById('comprasList');
+  const compras = filtrar('Compra', [...DATA.compras].reverse(), 'numero', ['fecha', 'fechaVenc']);
+  if (compras.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>No hay facturas de compra</p></div>';
+    return;
+  }
+  let html = '<div style="overflow-x:auto"><table><thead><tr><th>N° Factura</th><th>Proveedor</th><th>OC</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>';
+  compras.forEach(c => {
+    html += `<tr>
+      <td><strong>${c.numero}</strong></td>
+      <td>${c.proveedor}</td>
+      <td class="text-muted">${c.oc || '-'}</td>
+      <td class="money">${fmt(c.subtotal)}</td>
+      <td class="money">${fmt(c.iva)}</td>
+      <td class="money negative">${fmt(c.total)}</td>
+      <td><span class="status-badge status-${c.estado === 'Pagado' ? 'pagado' : 'pendiente'}">${c.estado}</span></td>
+      <td><button class="btn btn-sm btn-outline" onclick="toggleDetalleCompra(${c.id})">📄</button>
+      <button class="btn btn-sm btn-primary" onclick="editarCompra(${c.id})">✏️</button>
+      <button class="btn btn-sm btn-danger" onclick="eliminarCompra(${c.id})">✕</button></td>
+    </tr>
+    <tr id="detalleCompra${c.id}" style="display:none">
+      <td colspan="8" style="padding:0">
+        <div style="padding:12px 20px;background:#fafafa">
+          <div class="detail-grid">
+            <div class="item"><div class="lbl">Descripción</div><div class="val">${c.descripcion || 'Sin descripción'}</div></div>
+            <div class="item"><div class="lbl">Fecha Factura</div><div class="val">${c.fecha || '-'}</div></div>
+            <div class="item"><div class="lbl">Fecha Vencimiento</div><div class="val">${c.fechaVenc || '-'}</div></div>
+            <div class="item"><div class="lbl">IVA</div><div class="val">${fmt(c.iva)}</div></div>
+            <div class="item"><div class="lbl">Documento Externo</div><div class="val">${c.docExterno || '-'}</div></div>
+            <div class="item"><div class="lbl">Abonado</div><div class="val">${fmt(c.abonado || 0)}</div></div>
+            <div class="item"><div class="lbl">Saldo Pendiente</div><div class="val negative">${fmt(Math.max(0, c.total - (c.abonado || 0)))}</div></div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function toggleDetalleCompra(id) {
+  const el = document.getElementById('detalleCompra' + id);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function editarCompra(id) {
+  const c = DATA.compras.find(x => x.id === id);
+  if (!c) return;
+  compraEditandoId = id;
+  document.getElementById('compraNum').value = c.numero;
+  document.getElementById('compraProveedor').value = c.proveedor;
+  document.getElementById('compraOC').value = c.oc || '';
+  document.getElementById('compraFecha').value = c.fecha || '';
+  document.getElementById('compraFechaVenc').value = c.fechaVenc || '';
+  document.getElementById('compraDesc').value = c.descripcion || '';
+  document.getElementById('compraSubtotal').value = c.subtotal;
+  document.getElementById('compraDocExterno').value = c.docExterno || '';
+  calcularCompra();
+  document.getElementById('btnGuardarCompra').textContent = '💾 Actualizar Factura de Compra';
+  document.getElementById('btnCancelarCompra').style.display = '';
+  document.getElementById('editandoCompraLabel').style.display = '';
+  document.querySelector('[data-tab="compras"]').click();
+}
+
+function cancelarEdicionCompra() {
+  compraEditandoId = null;
+  document.getElementById('formCompra').reset();
+  limpiarCamposCompra();
+  document.getElementById('btnGuardarCompra').textContent = '+ Agregar Factura de Compra';
+  document.getElementById('btnCancelarCompra').style.display = 'none';
+  document.getElementById('editandoCompraLabel').style.display = 'none';
+}
+
+function eliminarCompra(id) {
+  if (!confirm('¿Eliminar esta factura de compra?')) return;
+  DATA.compras = DATA.compras.filter(c => c.id !== id);
+  DATA.cxp = DATA.cxp.filter(c => c.id !== id);
+  DATA.impuestos.compra = DATA.impuestos.compra.filter(t => t.id !== id);
+  guardarDatos(DATA);
+  renderAll();
+}
+
+function renderCxc() {
+  const tbody = document.getElementById('cxcTableBody');
+  const summary = document.getElementById('cxcSummary');
+  const filtered = filtrar('Cxc', DATA.cxc, 'factura', ['fecha']);
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay cuentas por cobrar</td></tr>';
+    summary.innerHTML = '';
+    return;
+  }
+  let html = '';
+  let totalValor = 0, totalAbonado = 0, totalSaldo = 0;
+  filtered.forEach(c => {
+    totalValor += c.valorTotal;
+    totalAbonado += c.abonado;
+    totalSaldo += c.saldo;
+    const abonoDet = c.abonos && c.abonos.length > 0;
+    const detId = 'cxcDet' + c.id;
+    html += `<tr>
+      <td><strong>${c.factura}</strong></td>
+      <td>${c.cliente}</td>
+      <td class="text-muted">${c.concepto}</td>
+      <td>${c.fecha || '-'}</td>
+      <td class="money">${fmt(c.valorTotal)}</td>
+      <td class="money positive">${fmt(c.abonado)}</td>
+      <td class="money"><strong class="${c.saldo > 0 ? 'negative' : 'positive'}">${fmt(c.saldo)}</strong></td>
+      <td><span class="status-badge status-${c.estado === 'Cobrado' ? 'cobrado' : c.estado === 'Parcial' ? 'pendiente' : 'pendiente'}">${c.estado}</span></td>
+      <td style="text-align:center;white-space:nowrap">
+        ${c.saldo > 0 ? `<button class="btn btn-success btn-sm" onclick="abonarCxc(${c.id})" title="Registrar abono">+ Abono</button>` : '✓'}
+        ${abonoDet ? `<br><span class="text-muted" style="font-size:10px;cursor:pointer" onclick="toggleCxcDet(${c.id})">📋 ${c.abonos.length} abono(s)</span>` : ''}
+      </td>
+    </tr>`;
+    if (abonoDet) {
+      html += `<tr id="${detId}" style="display:none">
+        <td colspan="9" style="padding:6px 12px;background:#fafafa">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">Historial de Abonos</div>
+          ${c.abonos.map((a, i) => `
+            <div style="display:flex;gap:10px;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px">
+              <span style="min-width:110px">${a.fecha}</span>
+              <span style="min-width:90px" class="money positive">${fmt(a.monto)}</span>
+              <button class="btn btn-sm btn-outline" onclick="editarAbonoCxc(${c.id},${i})" title="Editar">✏️</button>
+              <button class="btn btn-sm btn-danger" onclick="eliminarAbonoCxc(${c.id},${i})" title="Eliminar">🗑</button>
+            </div>
+          `).join('')}
+        </td>
+      </tr>`;
+    }
+  });
+  tbody.innerHTML = html;
+  summary.innerHTML = `
+    <div class="summary-item"><div class="label">Total por Cobrar</div><div class="value negative">${fmt(totalValor)}</div></div>
+    <div class="summary-item"><div class="label">Total Abonado</div><div class="value positive">${fmt(totalAbonado)}</div></div>
+    <div class="summary-item" style="background:#e8f5e9"><div class="label">Saldo Pendiente</div><div class="value">${fmt(totalSaldo)}</div></div>
+  `;
+}
+
+function toggleCxcDet(id) {
+  const el = document.getElementById('cxcDet' + id);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function renderCxp() {
+  const tbody = document.getElementById('cxpTableBody');
+  const summary = document.getElementById('cxpSummary');
+  const filtered = filtrar('Cxp', DATA.cxp, 'factura', ['fecha']);
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay cuentas por pagar</td></tr>';
+    summary.innerHTML = '';
+    return;
+  }
+  let html = '';
+  let totalValor = 0, totalAbonado = 0, totalSaldo = 0;
+  filtered.forEach(c => {
+    totalValor += c.valor;
+    totalAbonado += c.abonado;
+    totalSaldo += c.saldo;
+    const abonoDet = c.abonos && c.abonos.length > 0;
+    const detId = 'cxpDet' + c.id;
+    html += `<tr>
+      <td><strong>${c.factura}</strong></td>
+      <td>${c.acreedor}</td>
+      <td class="text-muted">${c.concepto}</td>
+      <td>${c.fecha || '-'}</td>
+      <td class="money negative">${fmt(c.valor)}</td>
+      <td class="money positive">${fmt(c.abonado)}</td>
+      <td class="money"><strong class="${c.saldo > 0 ? 'negative' : 'positive'}">${fmt(c.saldo)}</strong></td>
+      <td><span class="status-badge status-${c.estado === 'Pagado' ? 'pagado' : c.estado === 'Parcial' ? 'pendiente' : 'pendiente'}">${c.estado}</span></td>
+      <td style="text-align:center;white-space:nowrap">
+        ${c.saldo > 0 ? `<button class="btn btn-success btn-sm" onclick="abonarCxp(${c.id})" title="Registrar abono">+ Abono</button>` : '✓'}
+        ${abonoDet ? `<br><span class="text-muted" style="font-size:10px;cursor:pointer" onclick="toggleCxpDet(${c.id})">📋 ${c.abonos.length} abono(s)</span>` : ''}
+      </td>
+    </tr>`;
+    if (abonoDet) {
+      html += `<tr id="${detId}" style="display:none">
+        <td colspan="9" style="padding:6px 12px;background:#fafafa">
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">Historial de Abonos</div>
+          ${c.abonos.map((a, i) => `
+            <div style="display:flex;gap:10px;align-items:center;padding:3px 0;border-bottom:1px solid #eee;font-size:12px">
+              <span style="min-width:110px">${a.fecha}</span>
+              <span style="min-width:90px" class="money negative">${fmt(a.monto)}</span>
+              <button class="btn btn-sm btn-outline" onclick="editarAbonoCxp(${c.id},${i})" title="Editar">✏️</button>
+              <button class="btn btn-sm btn-danger" onclick="eliminarAbonoCxp(${c.id},${i})" title="Eliminar">🗑</button>
+            </div>
+          `).join('')}
+        </td>
+      </tr>`;
+    }
+  });
+  tbody.innerHTML = html;
+  summary.innerHTML = `
+    <div class="summary-item"><div class="label">Total por Pagar</div><div class="value negative">${fmt(totalValor)}</div></div>
+    <div class="summary-item"><div class="label">Total Abonado</div><div class="value positive">${fmt(totalAbonado)}</div></div>
+    <div class="summary-item" style="background:#fff3e0"><div class="label">Saldo Pendiente</div><div class="value">${fmt(totalSaldo)}</div></div>
+  `;
+}
+
+function toggleCxpDet(id) {
+  const el = document.getElementById('cxpDet' + id);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function renderImpuestos() {
+  const tbody = document.getElementById('taxTableBody');
+  const sumVenta = DATA.impuestos.venta.reduce((s, t) => s + t.valor, 0);
+  const sumReteIva = DATA.impuestos.reteiva.reduce((s, t) => s + t.valor, 0);
+  const sumCompra = DATA.impuestos.compra.reduce((s, t) => s + t.valor, 0);
+  const sumRebate = DATA.impuestos.rebate.reduce((s, t) => s + t.valor, 0);
+  const sumCross = DATA.impuestos.cross.reduce((s, t) => s + t.valor, 0);
+  const sumInsumos = 0;
+
+  document.getElementById('taxVenta').textContent = fmt(sumVenta);
+  document.getElementById('taxReteIva').textContent = fmt(sumReteIva);
+  document.getElementById('taxCompra').textContent = fmt(sumCompra);
+  document.getElementById('taxRebate').textContent = fmt(sumRebate);
+  document.getElementById('taxCross').textContent = fmt(sumCross);
+  document.getElementById('taxInsumos').textContent = fmt(sumInsumos);
+
+  const saldoIva = sumVenta - sumReteIva - sumCompra - sumRebate - sumCross - sumInsumos;
+  const saldoEl = document.getElementById('taxSaldo');
+  saldoEl.textContent = fmt(saldoIva);
+  saldoEl.className = 'value ' + (saldoIva >= 0 ? 'negative' : 'positive');
+
+  let html = '';
+  const allTax = [
+    { tipo: 'IVA Venta', items: DATA.impuestos.venta },
+    { tipo: 'RETEIVA', items: DATA.impuestos.reteiva },
+    { tipo: 'IVA Compra', items: DATA.impuestos.compra },
+    { tipo: 'IVA Rebate', items: DATA.impuestos.rebate },
+    { tipo: 'IVA Crossdocking', items: DATA.impuestos.cross }
+  ];
+  allTax.forEach(g => {
+    if (g.items.length === 0) {
+      html += `<tr><td><strong>${g.tipo}</strong></td><td colspan="2" class="text-muted">Sin registros</td></tr>`;
+    } else {
+      g.items.forEach((item, i) => {
+        html += `<tr>${i === 0 ? `<td rowspan="${g.items.length}"><strong>${g.tipo}</strong></td>` : ''}<td>${item.concepto}</td><td class="money">${fmt(item.valor)}</td></tr>`;
+      });
+    }
+  });
+  html += `<tr style="background:#e8f0fe;font-weight:700"><td colspan="2">SALDO IVA A PAGAR / (A FAVOR)</td><td class="money ${saldoIva >= 0 ? 'negative' : 'positive'}">${fmt(saldoIva)}</td></tr>`;
+  tbody.innerHTML = html;
+}
+
+function renderDocumentos() {
+  const container = document.getElementById('documentosList');
+  const allDocs = [
+    ...DATA.ventas.map(v => ({ ...v, tipoLabel: 'Venta' })),
+    ...DATA.compras.map(c => ({ ...c, tipoLabel: 'Compra' }))
+  ].sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
+
+  if (allDocs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📁</div><p>No hay documentos cargados</p></div>';
+    return;
+  }
+
+  let html = '';
+  allDocs.forEach(d => {
+    const isVenta = d.tipo === 'venta';
+    html += `<div class="card">
+      <div class="card-header">
+        <h3>${isVenta ? '📋' : '📦'} ${isVenta ? 'Factura de Venta' : 'Factura de Compra'} #${d.numero}</h3>
+        <div>
+          <span class="status-badge status-${d.estado === 'Cobrado' || d.estado === 'Pagado' ? 'cobrado' : 'pendiente'}">${d.estado}</span>
+          <button class="btn btn-sm btn-outline" onclick="toggleDocDetail(${d.id})">📄 Detalle</button>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#666;display:flex;gap:20px;flex-wrap:wrap">
+        <span><strong>${isVenta ? 'Cliente' : 'Proveedor'}:</strong> ${isVenta ? d.cliente : d.proveedor}</span>
+        <span><strong>Valor:</strong> ${isVenta ? fmt(d.recibir) : fmt(d.total)}</span>
+        <span><strong>Fecha:</strong> ${isVenta ? (d.fechaPedido || '-') : (d.fecha || '-')}</span>
+      </div>
+      <div class="invoice-detail" id="docDetail${d.id}">
+        <div class="detail-grid">
+          ${isVenta ? `
+            <div class="item"><div class="lbl">N° Factura</div><div class="val">${d.numero}</div></div>
+            <div class="item"><div class="lbl">Cliente</div><div class="val">${d.cliente}</div></div>
+            <div class="item"><div class="lbl">OC / Pedido</div><div class="val">${d.oc || '-'}</div></div>
+            <div class="item"><div class="lbl">Descripción</div><div class="val">${d.descripcion || 'Sin descripción'}</div></div>
+            <div class="item"><div class="lbl">Fecha de Ingreso</div><div class="val">${d.fechaPedido || '-'}</div></div>
+            <div class="item"><div class="lbl">Subtotal</div><div class="val">${fmt(d.subtotal)}</div></div>
+            <div class="item"><div class="lbl">IVA</div><div class="val">${fmt(d.iva)}</div></div>
+            <div class="item"><div class="lbl">Total</div><div class="val">${fmt(d.total)}</div></div>
+            <div class="item"><div class="lbl">Retefuente</div><div class="val negative">${fmt(d.retefuente)}</div></div>
+            <div class="item"><div class="lbl">ReteIVA</div><div class="val negative">${fmt(d.reteiva)}</div></div>
+            <div class="item"><div class="lbl">ReteICA</div><div class="val negative">${fmt(d.reteica)}</div></div>
+            <div class="item"><div class="lbl">Pronto Pago</div><div class="val negative">${fmt(d.prontoPago)}</div></div>
+            <div class="item"><div class="lbl">Neto a Recibir</div><div class="val positive" style="font-size:18px">${fmt(d.recibir)}</div></div>
+            <div class="item"><div class="lbl">Rebate</div><div class="val">${fmt(d.rebate)}</div></div>
+            <div class="item"><div class="lbl">Crossdocking</div><div class="val">${fmt(d.crossdocking)}</div></div>
+            <div class="item"><div class="lbl">IVA Rebate</div><div class="val">${fmt(d.ivaRebate)}</div></div>
+            <div class="item"><div class="lbl">IVA Crossdocking</div><div class="val">${fmt(d.ivaCross)}</div></div>
+            <div class="item" style="grid-column:1/-1;background:#fff3e0"><div class="lbl">Documento Externo</div><div class="val">${d.docExterno || 'Ninguno'}</div></div>
+          ` : `
+            <div class="item"><div class="lbl">N° Factura</div><div class="val">${d.numero}</div></div>
+            <div class="item"><div class="lbl">Proveedor</div><div class="val">${d.proveedor}</div></div>
+            <div class="item"><div class="lbl">OC / Pedido</div><div class="val">${d.oc || '-'}</div></div>
+            <div class="item"><div class="lbl">Descripción</div><div class="val">${d.descripcion || 'Sin descripción'}</div></div>
+            <div class="item"><div class="lbl">Fecha Factura</div><div class="val">${d.fecha || '-'}</div></div>
+            <div class="item"><div class="lbl">Fecha Vencimiento</div><div class="val">${d.fechaVenc || '-'}</div></div>
+            <div class="item"><div class="lbl">Subtotal</div><div class="val">${fmt(d.subtotal)}</div></div>
+            <div class="item"><div class="lbl">IVA</div><div class="val">${fmt(d.iva)}</div></div>
+            <div class="item"><div class="lbl">Total</div><div class="val negative" style="font-size:18px">${fmt(d.total)}</div></div>
+            <div class="item" style="grid-column:1/-1;background:#fff3e0"><div class="lbl">Documento Externo</div><div class="val">${d.docExterno || 'Ninguno'}</div></div>
+          `}
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleDocDetail(id) {
+  const el = document.getElementById('docDetail' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function renderConfig() {
+  const tbody = document.getElementById('configTableBody');
+  let html = '';
+  for (const [key, val] of Object.entries(DATA.config.taxRates)) {
+    const desc = DATA.config.taxRateDescriptions[key] || 'Subtotal';
+    html += `<tr>
+      <td><strong>${key.replace(/([A-Z])/g, ' $1').trim()}</strong></td>
+      <td><input type="number" step="0.01" value="${val}" onchange="actualizarConfig('${key}', this.value)"></td>
+      <td class="text-muted">${desc}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="eliminarConfig('${key}')">✕</button></td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function actualizarConfig(key, val) {
+  DATA.config.taxRates[key] = parseFloat(val) || 0;
+  guardarDatos(DATA);
+}
+
+function eliminarConfig(key) {
+  if (!confirm(`¿Eliminar "${key}" de la configuración?`)) return;
+  delete DATA.config.taxRates[key];
+  delete DATA.config.taxRateDescriptions[key];
+  guardarDatos(DATA);
+  renderConfig();
+}
+
+function agregarConfigItem() {
+  const name = document.getElementById('newConfigName').value.trim().toUpperCase().replace(/\s+/g, '_');
+  const pct = parseFloat(document.getElementById('newConfigPct').value);
+  if (!name || isNaN(pct)) { alert('Ingresa nombre y porcentaje'); return; }
+  DATA.config.taxRates[name] = pct;
+  DATA.config.taxRateDescriptions[name] = 'Subtotal';
+  guardarDatos(DATA);
+  document.getElementById('newConfigName').value = '';
+  document.getElementById('newConfigPct').value = '';
+  renderConfig();
+}
+
+function actualizarBadges() {
+  const pendCxc = DATA.cxc.filter(c => c.saldo > 0).length;
+  const pendCxp = DATA.cxp.filter(c => c.saldo > 0).length;
+  document.getElementById('cxcBadge').textContent = pendCxc;
+  document.getElementById('cxpBadge').textContent = pendCxp;
+}
+
+function exportarDatos() {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cxc_cxp_finandina_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importarDatos(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.config) data.config = getDefaultConfig();
+      if (!data.impuestos) data.impuestos = { venta: [], reteiva: [], compra: [], rebate: [], cross: [], insumos: [] };
+      DATA = data;
+      guardarDatos(DATA);
+      renderAll();
+      alert('Datos importados correctamente');
+    } catch(err) {
+      alert('Error al importar: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function limpiarDatos() {
+  DATA = getDefaultData();
+  guardarDatos(DATA);
+  renderAll();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderAll();
+  calcularVenta();
+});
+</script>
+</body>
+</html>
