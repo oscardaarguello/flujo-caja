@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CXC / CXP - Finandina</title>
+<title>CABLE FINANDINA</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
@@ -82,7 +82,7 @@ tr:hover td { background: #f8f9ff; }
 
 <div class="header">
   <div>
-    <h1>CXC / CXP <span>FINANDINA</span></h1>
+    <h1>CABLE <span>FINANDINA</span></h1>
     <div class="subtitle">Miles de pesos · Datos guardados automáticamente · <span id="syncStatus" style="font-weight:600">Conectando...</span></div>
   </div>
   <div>
@@ -617,8 +617,8 @@ function calcularVenta() {
 
 function calcularCompra() {
   const subtotal = parseFloat(document.getElementById('compraSubtotal').value) || 0;
-  const iva = subtotal * getPct('IVA');
-  const total = subtotal + iva;
+  const iva = Number((subtotal * getPct('IVA')).toFixed(3));
+  const total = Number((subtotal + iva).toFixed(3));
   document.getElementById('compraIva').value = fmt(iva);
   document.getElementById('compraTotal').value = fmt(total);
 }
@@ -628,18 +628,18 @@ function guardarVenta(e) {
   e.preventDefault();
   const subtotal = parseFloat(document.getElementById('ventaSubtotal').value) || 0;
   const pctIva = getPct('IVA');
-  const iva = subtotal * pctIva;
-  const total = subtotal + iva;
-  const retefuente = subtotal * getPct('RETEFUENTE');
-  const reteiva = iva * getPct('RETEIVA');
-  const reteica = subtotal * getPct('RETEICA');
-  const despuesRet = total - retefuente - reteiva - reteica;
+  const iva = Number((subtotal * pctIva).toFixed(3));
+  const total = Number((subtotal + iva).toFixed(3));
+  const retefuente = Number((subtotal * getPct('RETEFUENTE')).toFixed(3));
+  const reteiva = Number((iva * getPct('RETEIVA')).toFixed(3));
+  const reteica = Number((subtotal * getPct('RETEICA')).toFixed(3));
+  const despuesRet = Number((total - retefuente - reteiva - reteica).toFixed(3));
   const prontoPago = parseFloat(document.getElementById('ventaProntoPago').value) || 0;
-  const recibir = despuesRet - prontoPago;
-  const rebate = total * getPct('REBATE');
-  const crossdocking = parseFloat(document.getElementById('ventaCrossdocking').value) || (total * getPct('CROSSDOCKING'));
-  const ivaRebate = rebate / (1 + pctIva) * pctIva;
-  const ivaCross = crossdocking / (1 + pctIva) * pctIva;
+  const recibir = Number((despuesRet - prontoPago).toFixed(3));
+  const rebate = Number((total * getPct('REBATE')).toFixed(3));
+  const crossdocking = Number((parseFloat(document.getElementById('ventaCrossdocking').value) || (total * getPct('CROSSDOCKING'))).toFixed(3));
+  const ivaRebate = Number((rebate / (1 + pctIva) * pctIva).toFixed(3));
+  const ivaCross = Number((crossdocking / (1 + pctIva) * pctIva).toFixed(3));
 
   if (ventaEditandoId) {
     const idx = DATA.ventas.findIndex(v => v.id === ventaEditandoId);
@@ -707,9 +707,9 @@ function actualizarCxc(venta, oldAbonos) {
     cliente: venta.cliente,
     concepto: venta.descripcion || `Factura de Venta ${venta.numero}`,
     fecha: venta.fechaPedido,
-    valorTotal: venta.recibir,
+    valorTotal: Number(venta.recibir.toFixed(3)),
     abonado: 0,
-    saldo: venta.recibir,
+    saldo: Number(venta.recibir.toFixed(3)),
     estado: 'Pendiente',
     tipo: 'venta',
     ventaId: venta.id
@@ -717,8 +717,8 @@ function actualizarCxc(venta, oldAbonos) {
   // Preserve existing abonos
   if (oldAbonos && oldAbonos.length > 0) {
     entry.abonos = oldAbonos.slice();
-    entry.abonado = oldAbonos.reduce((s, a) => s + a.monto, 0);
-    entry.saldo = Math.max(0, venta.recibir - entry.abonado);
+    entry.abonado = Number(oldAbonos.reduce((s, a) => s + a.monto, 0).toFixed(3));
+    entry.saldo = Number(Math.max(0, venta.recibir - entry.abonado).toFixed(3));
     entry.estado = entry.saldo <= 0 ? 'Cobrado' : entry.abonado > 0 ? 'Parcial' : 'Pendiente';
   }
   DATA.cxc.push(entry);
@@ -756,8 +756,8 @@ function guardarCompra(e) {
   e.preventDefault();
   const subtotal = parseFloat(document.getElementById('compraSubtotal').value) || 0;
   const pctIva = getPct('IVA');
-  const iva = subtotal * pctIva;
-  const total = subtotal + iva;
+  const iva = Number((subtotal * pctIva).toFixed(3));
+  const total = Number((subtotal + iva).toFixed(3));
 
   if (compraEditandoId) {
     const idx = DATA.compras.findIndex(c => c.id === compraEditandoId);
@@ -821,17 +821,17 @@ function actualizarCxp(compra, oldAbonos) {
     acreedor: compra.proveedor,
     concepto: compra.descripcion || `Factura de Compra ${compra.numero}`,
     fecha: compra.fecha,
-    valor: compra.total,
+    valor: Number(compra.total.toFixed(3)),
     abonado: 0,
-    saldo: compra.total,
+    saldo: Number(compra.total.toFixed(3)),
     estado: 'Pendiente',
     tipo: 'compra',
     compraId: compra.id
   };
   if (oldAbonos && oldAbonos.length > 0) {
     entry.abonos = oldAbonos.slice();
-    entry.abonado = oldAbonos.reduce((s, a) => s + a.monto, 0);
-    entry.saldo = Math.max(0, compra.total - entry.abonado);
+    entry.abonado = Number(oldAbonos.reduce((s, a) => s + a.monto, 0).toFixed(3));
+    entry.saldo = Number(Math.max(0, compra.total - entry.abonado).toFixed(3));
     entry.estado = entry.saldo <= 0 ? 'Pagado' : entry.abonado > 0 ? 'Parcial' : 'Pendiente';
   }
   DATA.cxp.push(entry);
@@ -898,8 +898,8 @@ function eliminarAbonoCxc(cxcId, idx) {
 }
 
 function recalcularCxc(item) {
-  item.abonado = item.abonos.reduce((s, a) => s + a.monto, 0);
-  item.saldo = Math.max(0, item.valorTotal - item.abonado);
+  item.abonado = Number(item.abonos.reduce((s, a) => s + a.monto, 0).toFixed(3));
+  item.saldo = Number(Math.max(0, item.valorTotal - item.abonado).toFixed(3));
   item.estado = item.saldo <= 0 ? 'Cobrado' : item.abonado > 0 ? 'Parcial' : 'Pendiente';
 }
 
@@ -952,8 +952,8 @@ function eliminarAbonoCxp(cxpId, idx) {
 }
 
 function recalcularCxp(item) {
-  item.abonado = item.abonos.reduce((s, a) => s + a.monto, 0);
-  item.saldo = Math.max(0, item.valor - item.abonado);
+  item.abonado = Number(item.abonos.reduce((s, a) => s + a.monto, 0).toFixed(3));
+  item.saldo = Number(Math.max(0, item.valor - item.abonado).toFixed(3));
   item.estado = item.saldo <= 0 ? 'Pagado' : item.abonado > 0 ? 'Parcial' : 'Pendiente';
 }
 
