@@ -95,6 +95,7 @@ tr:hover td { background: #f8f9ff; }
 </div>
 
 <div class="tabs" id="tabs">
+  <button class="tab" data-tab="dashboard">📊 Dashboard</button>
   <button class="tab active" data-tab="ventas">📋 Ventas</button>
   <button class="tab" data-tab="compras">📦 Compras</button>
   <button class="tab" data-tab="cxc">💰 CXC <span class="badge" id="cxcBadge">0</span></button>
@@ -318,38 +319,39 @@ tr:hover td { background: #f8f9ff; }
 
 <!-- ===== DASHBOARD ===== -->
 <div class="tab-content" id="tab-dashboard">
-  <p class="text-muted" style="margin-bottom:12px">Resumen ejecutivo · Filtra por mes para ver los totales del período.</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <label style="font-weight:600;padding:6px 0">Mes:</label>
-    <select id="dashMes" onchange="renderDashboard()" style="padding:6px 10px;border:1px solid #dadce0;border-radius:6px;font-size:13px;min-width:180px"></select>
+  <div style="margin-bottom:20px">
+    <h3 style="margin:0 0 4px 0">Panel de Control</h3>
+    <p class="text-muted" style="margin:0">Resumen ejecutivo · Filtra por mes para ver los totales del período.</p>
   </div>
-  <div class="summary-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-    <div class="summary-item" style="background:#e8f5e9">
-      <div class="label">Ventas Ejecutadas</div>
-      <div class="value positive" id="dashVentas" style="font-size:22px">0</div>
-      <div class="label" style="font-size:11px;color:#999" id="dashVentasDetalle">Total acumulado</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding:12px 16px;background:#f8f9fa;border-radius:8px;align-items:center">
+    <span style="font-weight:600;font-size:13px;color:#555;margin-right:6px">📅 Período:</span>
+    <select id="dashMes" onchange="renderDashboard()" style="padding:7px 12px;border:1px solid #dadce0;border-radius:6px;font-size:13px;min-width:180px;background:#fff"></select>
+    <span id="dashRecuento" style="font-size:12px;color:#999;margin-left:8px"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+    <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+      <div style="font-size:13px;font-weight:600;color:#2e7d32;margin-bottom:4px">📈 Ventas Ejecutadas</div>
+      <div style="font-size:28px;font-weight:700;color:#1b5e20" id="dashVentas">0</div>
+      <div style="font-size:11px;color:#558b2f;margin-top:4px" id="dashVentasDetalle">Total acumulado</div>
     </div>
-    <div class="summary-item" style="background:#fff3e0">
-      <div class="label">Compras</div>
-      <div class="value negative" id="dashCompras" style="font-size:22px">0</div>
-      <div class="label" style="font-size:11px;color:#999" id="dashComprasDetalle">Total acumulado</div>
+    <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+      <div style="font-size:13px;font-weight:600;color:#e65100;margin-bottom:4px">📦 Compras</div>
+      <div style="font-size:28px;font-weight:700;color:#bf360c" id="dashCompras">0</div>
+      <div style="font-size:11px;color:#e65100;margin-top:4px" id="dashComprasDetalle">Total acumulado</div>
     </div>
-    <div class="summary-item" style="background:#e3f2fd">
-      <div class="label">Rebate Generado</div>
-      <div class="value" id="dashRebate" style="font-size:22px">0</div>
-      <div class="label" style="font-size:11px;color:#999" id="dashRebateDetalle">Total acumulado</div>
+    <div style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+      <div style="font-size:13px;font-weight:600;color:#1565c0;margin-bottom:4px">🏷️ Rebate Generado</div>
+      <div style="font-size:28px;font-weight:700;color:#0d47a1" id="dashRebate">0</div>
+      <div style="font-size:11px;color:#1976d2;margin-top:4px" id="dashRebateDetalle">Total acumulado</div>
     </div>
-    <div class="summary-item" style="background:#f3e5f5">
-      <div class="label">Crossdocking</div>
-      <div class="value" id="dashCross" style="font-size:22px">0</div>
-      <div class="label" style="font-size:11px;color:#999" id="dashCrossDetalle">Total acumulado</div>
+    <div style="background:linear-gradient(135deg,#f3e5f5,#e1bee7);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+      <div style="font-size:13px;font-weight:600;color:#6a1b9a;margin-bottom:4px">🔄 Crossdocking</div>
+      <div style="font-size:28px;font-weight:700;color:#4a148c" id="dashCross">0</div>
+      <div style="font-size:11px;color:#7b1fa2;margin-top:4px" id="dashCrossDetalle">Total acumulado</div>
     </div>
   </div>
-  <div style="margin-top:20px;overflow-x:auto">
-    <table>
-      <thead><tr><th>Factura</th><th>Cliente/Proveedor</th><th>Fecha</th><th>Total</th><th>Rebate</th><th>Crossdocking</th></tr></thead>
-      <tbody id="dashTableBody"></tbody>
-    </table>
+  <div style="margin-top:20px;padding:16px;background:#f5f5f5;border-radius:8px;text-align:center;font-size:12px;color:#888" id="dashFooter">
+    Los valores están expresados en miles de pesos.
   </div>
 </div>
 
@@ -1334,9 +1336,9 @@ function renderDashboard() {
   const sel = document.getElementById('dashMes');
   const selected = sel.value;
   const claves = Object.keys(meses).sort().reverse();
+  const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   sel.innerHTML = '<option value="">Todos los meses</option>' +
     claves.map(m => {
-      const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
       const [anio, mes] = m.split('-');
       return `<option value="${m}">${nombres[parseInt(mes)-1]} ${anio}</option>`;
     }).join('');
@@ -1344,18 +1346,16 @@ function renderDashboard() {
 
   const filtroMes = sel.value;
 
-  // Filter data
-  const filtrarMes = items => items.filter(it => {
+  const filtrarMes = (items, campoFecha) => items.filter(it => {
     if (!filtroMes) return true;
-    const f = it.fechaPedido || it.fecha || '';
-    return f.startsWith(filtroMes);
+    return (it[campoFecha] || '').startsWith(filtroMes);
   });
 
-  const ventas = filtrarMes(DATA.ventas);
-  const compras = filtrarMes(DATA.compras);
+  const ventas = filtrarMes(DATA.ventas, 'fechaPedido');
+  const compras = filtrarMes(DATA.compras, 'fecha');
 
-  const totalVentas = ventas.reduce((s, v) => s + v.total, 0);
-  const totalCompras = compras.reduce((s, c) => s + c.total, 0);
+  const totalVentas = ventas.reduce((s, v) => s + (v.subtotal || 0), 0);
+  const totalCompras = compras.reduce((s, c) => s + (c.subtotal || 0), 0);
   const totalRebate = ventas.reduce((s, v) => s + (v.rebate || 0), 0);
   const totalCross = ventas.reduce((s, v) => s + (v.crossdocking || 0), 0);
 
@@ -1367,32 +1367,16 @@ function renderDashboard() {
   document.getElementById('dashRebate').textContent = fmt(totalRebate);
   document.getElementById('dashCross').textContent = fmt(totalCross);
 
-  const detVenta = filtroMes ? `${nVentas} factura(s) en el mes` : `${nVentas} factura(s) · Total acumulado`;
-  const detCompra = filtroMes ? `${nCompras} factura(s) en el mes` : `${nCompras} factura(s) · Total acumulado`;
+  const detVenta = filtroMes ? `${nVentas} factura(s) en el mes` : `${nVentas} factura(s) cargadas`;
+  const detCompra = filtroMes ? `${nCompras} factura(s) en el mes` : `${nCompras} factura(s) cargadas`;
   document.getElementById('dashVentasDetalle').textContent = detVenta;
   document.getElementById('dashComprasDetalle').textContent = detCompra;
   document.getElementById('dashRebateDetalle').textContent = filtroMes ? 'Generado en el mes' : 'Total acumulado';
   document.getElementById('dashCrossDetalle').textContent = filtroMes ? 'Generado en el mes' : 'Total acumulado';
 
-  // Detail table
-  const tbody = document.getElementById('dashTableBody');
-  const allRows = [
-    ...ventas.map(v => ({ factura: v.numero, contraparte: v.cliente, fecha: v.fechaPedido, total: v.total, rebate: v.rebate || 0, cross: v.crossdocking || 0, tipo: 'Venta' })),
-    ...compras.map(c => ({ factura: c.numero, contraparte: c.proveedor, fecha: c.fecha || '', total: -c.total, rebate: 0, cross: 0, tipo: 'Compra' }))
-  ].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-
-  if (allRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay datos</td></tr>';
-    return;
-  }
-  tbody.innerHTML = allRows.map(r => `<tr>
-    <td><strong>${r.factura}</strong></td>
-    <td>${r.contraparte}</td>
-    <td class="text-muted">${r.fecha || '-'}</td>
-    <td class="money ${r.tipo === 'Venta' ? 'positive' : 'negative'}">${fmt(r.total)}</td>
-    <td class="money">${r.rebate ? fmt(r.rebate) : '-'}</td>
-    <td class="money">${r.cross ? fmt(r.cross) : '-'}</td>
-  </tr>`).join('');
+  document.getElementById('dashRecuento').textContent = filtroMes
+    ? `${nVentas + nCompras} documento(s) en ${filtroMes}`
+    : `${DATA.ventas.length + DATA.compras.length} documento(s) en total`;
 }
 
 function renderDocumentos() {
