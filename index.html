@@ -100,6 +100,7 @@ tr:hover td { background: #f8f9ff; }
   <button class="tab" data-tab="cxc">💰 CXC <span class="badge" id="cxcBadge">0</span></button>
   <button class="tab" data-tab="cxp">💳 CXP <span class="badge" id="cxpBadge">0</span></button>
   <button class="tab" data-tab="impuestos">🧾 Impuestos</button>
+  <button class="tab" data-tab="dashboard">📊 Dashboard</button>
   <button class="tab" data-tab="documentos">📁 Docs</button>
   <button class="tab" data-tab="config">⚙ Config</button>
 </div>
@@ -311,6 +312,43 @@ tr:hover td { background: #f8f9ff; }
     <table class="tax-table">
       <thead><tr><th>Tipo</th><th>Concepto</th><th>Valor (miles $)</th></tr></thead>
       <tbody id="taxTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="tab-content" id="tab-dashboard">
+  <p class="text-muted" style="margin-bottom:12px">Resumen ejecutivo · Filtra por mes para ver los totales del período.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <label style="font-weight:600;padding:6px 0">Mes:</label>
+    <select id="dashMes" onchange="renderDashboard()" style="padding:6px 10px;border:1px solid #dadce0;border-radius:6px;font-size:13px;min-width:180px"></select>
+  </div>
+  <div class="summary-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="summary-item" style="background:#e8f5e9">
+      <div class="label">Ventas Ejecutadas</div>
+      <div class="value positive" id="dashVentas" style="font-size:22px">0</div>
+      <div class="label" style="font-size:11px;color:#999" id="dashVentasDetalle">Total acumulado</div>
+    </div>
+    <div class="summary-item" style="background:#fff3e0">
+      <div class="label">Compras</div>
+      <div class="value negative" id="dashCompras" style="font-size:22px">0</div>
+      <div class="label" style="font-size:11px;color:#999" id="dashComprasDetalle">Total acumulado</div>
+    </div>
+    <div class="summary-item" style="background:#e3f2fd">
+      <div class="label">Rebate Generado</div>
+      <div class="value" id="dashRebate" style="font-size:22px">0</div>
+      <div class="label" style="font-size:11px;color:#999" id="dashRebateDetalle">Total acumulado</div>
+    </div>
+    <div class="summary-item" style="background:#f3e5f5">
+      <div class="label">Crossdocking</div>
+      <div class="value" id="dashCross" style="font-size:22px">0</div>
+      <div class="label" style="font-size:11px;color:#999" id="dashCrossDetalle">Total acumulado</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;overflow-x:auto">
+    <table>
+      <thead><tr><th>Factura</th><th>Cliente/Proveedor</th><th>Fecha</th><th>Total</th><th>Rebate</th><th>Crossdocking</th></tr></thead>
+      <tbody id="dashTableBody"></tbody>
     </table>
   </div>
 </div>
@@ -925,6 +963,7 @@ function renderAll() {
   renderCxc();
   renderCxp();
   renderImpuestos();
+  renderDashboard();
   renderDocumentos();
   renderConfig();
   actualizarBadges();
@@ -1279,6 +1318,81 @@ function renderImpuestos() {
   });
   html += `<tr style="background:#e8f0fe;font-weight:700"><td colspan="2">SALDO IVA A PAGAR / (A FAVOR)</td><td class="money ${saldoIva >= 0 ? 'negative' : 'positive'}">${fmt(saldoIva)}</td></tr>`;
   tbody.innerHTML = html;
+}
+
+function renderDashboard() {
+  // Build month options from ventas and compras
+  const meses = {};
+  const addFecha = (f) => {
+    if (!f) return;
+    const m = f.substring(0, 7);
+    if (m) meses[m] = (meses[m] || 0) + 1;
+  };
+  DATA.ventas.forEach(v => addFecha(v.fechaPedido));
+  DATA.compras.forEach(c => addFecha(c.fecha));
+
+  const sel = document.getElementById('dashMes');
+  const selected = sel.value;
+  const claves = Object.keys(meses).sort().reverse();
+  sel.innerHTML = '<option value="">Todos los meses</option>' +
+    claves.map(m => {
+      const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const [anio, mes] = m.split('-');
+      return `<option value="${m}">${nombres[parseInt(mes)-1]} ${anio}</option>`;
+    }).join('');
+  sel.value = selected || '';
+
+  const filtroMes = sel.value;
+
+  // Filter data
+  const filtrarMes = items => items.filter(it => {
+    if (!filtroMes) return true;
+    const f = it.fechaPedido || it.fecha || '';
+    return f.startsWith(filtroMes);
+  });
+
+  const ventas = filtrarMes(DATA.ventas);
+  const compras = filtrarMes(DATA.compras);
+
+  const totalVentas = ventas.reduce((s, v) => s + v.total, 0);
+  const totalCompras = compras.reduce((s, c) => s + c.total, 0);
+  const totalRebate = ventas.reduce((s, v) => s + (v.rebate || 0), 0);
+  const totalCross = ventas.reduce((s, v) => s + (v.crossdocking || 0), 0);
+
+  const nVentas = ventas.length;
+  const nCompras = compras.length;
+
+  document.getElementById('dashVentas').textContent = fmt(totalVentas);
+  document.getElementById('dashCompras').textContent = fmt(totalCompras);
+  document.getElementById('dashRebate').textContent = fmt(totalRebate);
+  document.getElementById('dashCross').textContent = fmt(totalCross);
+
+  const detVenta = filtroMes ? `${nVentas} factura(s) en el mes` : `${nVentas} factura(s) · Total acumulado`;
+  const detCompra = filtroMes ? `${nCompras} factura(s) en el mes` : `${nCompras} factura(s) · Total acumulado`;
+  document.getElementById('dashVentasDetalle').textContent = detVenta;
+  document.getElementById('dashComprasDetalle').textContent = detCompra;
+  document.getElementById('dashRebateDetalle').textContent = filtroMes ? 'Generado en el mes' : 'Total acumulado';
+  document.getElementById('dashCrossDetalle').textContent = filtroMes ? 'Generado en el mes' : 'Total acumulado';
+
+  // Detail table
+  const tbody = document.getElementById('dashTableBody');
+  const allRows = [
+    ...ventas.map(v => ({ factura: v.numero, contraparte: v.cliente, fecha: v.fechaPedido, total: v.total, rebate: v.rebate || 0, cross: v.crossdocking || 0, tipo: 'Venta' })),
+    ...compras.map(c => ({ factura: c.numero, contraparte: c.proveedor, fecha: c.fecha || '', total: -c.total, rebate: 0, cross: 0, tipo: 'Compra' }))
+  ].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+
+  if (allRows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay datos</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allRows.map(r => `<tr>
+    <td><strong>${r.factura}</strong></td>
+    <td>${r.contraparte}</td>
+    <td class="text-muted">${r.fecha || '-'}</td>
+    <td class="money ${r.tipo === 'Venta' ? 'positive' : 'negative'}">${fmt(r.total)}</td>
+    <td class="money">${r.rebate ? fmt(r.rebate) : '-'}</td>
+    <td class="money">${r.cross ? fmt(r.cross) : '-'}</td>
+  </tr>`).join('');
 }
 
 function renderDocumentos() {
